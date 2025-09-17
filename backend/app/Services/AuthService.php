@@ -20,8 +20,13 @@ class AuthService
     {
         $user = $this->users->findByEmail($email);
         $ip = $context['ip'] ?? null;
+        $userAgent = $context['user_agent'] ?? null;
         if (!$user || !password_verify($password, $user['password_hash'])) {
-            $this->auditLogger->logAction(null, 'auth.login_failed', ['email' => $email, 'ip' => $ip]);
+            $this->auditLogger->logAction(null, 'auth.login_failed', [
+                'email' => $email,
+                'ip' => $ip,
+                'user_agent' => $userAgent,
+            ]);
             throw new RuntimeException('Invalid credentials');
         }
 
@@ -30,7 +35,11 @@ class AuthService
         $_SESSION['name'] = $user['name'];
         $_SESSION['email'] = $user['email'];
 
-        $this->auditLogger->logAction($user['id'], 'auth.login_success', ['ip' => $ip]);
+        $this->auditLogger->logAction($user['id'], 'auth.login_success', [
+            'ip' => $ip,
+            'user_agent' => $userAgent,
+            'email' => $user['email'],
+        ]);
 
         return [
             'id' => $user['id'],
@@ -40,11 +49,14 @@ class AuthService
         ];
     }
 
-    public function logout(): void
+    public function logout(array $context = []): void
     {
         $user = $this->currentUser();
         if ($user) {
-            $this->auditLogger->logAction($user['id'], 'auth.logout');
+            $this->auditLogger->logAction($user['id'], 'auth.logout', [
+                'ip' => $context['ip'] ?? null,
+                'user_agent' => $context['user_agent'] ?? null,
+            ]);
         }
 
         $_SESSION = [];

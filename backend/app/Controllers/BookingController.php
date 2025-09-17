@@ -64,7 +64,11 @@ class BookingController extends Controller
         $data = (array)$request->getParsedBody();
         $status = $data['status'] ?? 'pending';
 
-        $this->bookings->updateStatus($bookingId, $status, $user['id']);
+        try {
+            $this->bookings->updateStatus($bookingId, $status, $user['id']);
+        } catch (RuntimeException $exception) {
+            return $this->json($response, ['message' => $exception->getMessage()], 400);
+        }
 
         return $this->json($response, ['message' => 'updated']);
     }

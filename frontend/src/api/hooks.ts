@@ -1,4 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  keepPreviousData,
+} from "@tanstack/react-query";
 import { apiClient } from "./client";
 
 export type Article = {
@@ -28,6 +33,7 @@ export type Booking = {
   id: number;
   mentor_id: number;
   mentor_name: string;
+  student_name?: string;
   subject: string;
   location: string;
   start_time: string;
@@ -54,38 +60,42 @@ export type Resource = {
   created_at: string;
 };
 
+type HomepageResponse = {
+  featured: Article[];
+  latest: Article[];
+  announcements: Announcement[];
+};
+
+export type ArchiveResponse = {
+  items: Article[];
+  total: number;
+  page: number;
+  perPage: number;
+};
+
 export const useHomepageFeed = () =>
-  useQuery({
+  useQuery<HomepageResponse>({
     queryKey: ["homepage"],
     queryFn: async () => {
-      const { data } = await apiClient.get<{
-        featured: Article[];
-        latest: Article[];
-        announcements: Announcement[];
-      }>("/articles");
+      const { data } = await apiClient.get<HomepageResponse>("/articles");
       return data;
     },
   });
 
 export const useArchive = (page: number) =>
-  useQuery({
+  useQuery<ArchiveResponse>({
     queryKey: ["archive", page],
     queryFn: async () => {
-      const { data } = await apiClient.get("/articles/archive", {
+      const { data } = await apiClient.get<ArchiveResponse>("/articles/archive", {
         params: { page },
       });
-      return data as {
-        items: Article[];
-        total: number;
-        page: number;
-        perPage: number;
-      };
+      return data;
     },
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   });
 
 export const useArticle = (slug: string) =>
-  useQuery({
+  useQuery<Article & { content: string }>({
     queryKey: ["article", slug],
     queryFn: async () => {
       const { data } = await apiClient.get<{ article: Article & { content: string } }>(
@@ -97,7 +107,7 @@ export const useArticle = (slug: string) =>
   });
 
 export const useMentors = () =>
-  useQuery({
+  useQuery<Mentor[]>({
     queryKey: ["mentors"],
     queryFn: async () => {
       const { data } = await apiClient.get<{ mentors: Mentor[] }>("/mentors");
@@ -106,7 +116,7 @@ export const useMentors = () =>
   });
 
 export const useBookings = () =>
-  useQuery({
+  useQuery<Booking[]>({
     queryKey: ["bookings"],
     queryFn: async () => {
       const { data } = await apiClient.get<{ bookings: Booking[] }>("/bookings");
@@ -134,7 +144,7 @@ export const useCreateBooking = () => {
 };
 
 export const useResources = () =>
-  useQuery({
+  useQuery<Resource[]>({
     queryKey: ["resources"],
     queryFn: async () => {
       const { data } = await apiClient.get<{ resources: Resource[] }>("/resources");
@@ -143,7 +153,7 @@ export const useResources = () =>
   });
 
 export const useMyResources = (enabled = true) =>
-  useQuery({
+  useQuery<Resource[]>({
     queryKey: ["my-resources"],
     queryFn: async () => {
       const { data } = await apiClient.get<{ resources: Resource[] }>("/resources/mine");
@@ -153,7 +163,7 @@ export const useMyResources = (enabled = true) =>
   });
 
 export const usePendingResources = () =>
-  useQuery({
+  useQuery<Resource[]>({
     queryKey: ["pending-resources"],
     queryFn: async () => {
       const { data } = await apiClient.get<{ resources: Resource[] }>("/admin/resources/pending");
@@ -176,7 +186,7 @@ export const useApproveResource = () => {
 };
 
 export const useAdminBookings = () =>
-  useQuery({
+  useQuery<Booking[]>({
     queryKey: ["admin-bookings"],
     queryFn: async () => {
       const { data } = await apiClient.get<{ bookings: Booking[] }>("/admin/bookings");

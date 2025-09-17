@@ -1,4 +1,5 @@
-import { FormEvent, useMemo, useState } from "react";
+import type { FormEvent } from "react";
+import { useMemo, useState } from "react";
 import { useAuthStore } from "../store/auth";
 import { useCreateBooking, useBookings, useMentors } from "../api/hooks";
 
