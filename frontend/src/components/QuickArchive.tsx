@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useArchive } from "../api/hooks";
+import { cn } from "../lib/cn";
 
 type QuickArchiveProps = {
   className?: string;
@@ -7,46 +8,43 @@ type QuickArchiveProps = {
 
 export const QuickArchive = ({ className = "" }: QuickArchiveProps) => {
   const { data, isLoading } = useArchive(1);
-  const containerClasses =
-    "rounded-3xl border border-slate-200 bg-white/95 p-6 shadow-sm transition-shadow hover:shadow-md";
 
   return (
-    <div className={`${containerClasses} ${className}`.trim()}>
-      <div className="flex items-start justify-between gap-3">
+    <section
+      className={cn(
+        "rounded-2xl border border-slate-200 bg-white p-6",
+        "transition hover:border-primary/40",
+        className,
+      )}
+    >
+      <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-            📰
-          </span>
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">📰</span>
           <div>
-            <h3 className="text-base font-semibold text-slate-900">往期精选</h3>
-            <p className="text-xs text-slate-500">最新六篇文章速览</p>
+            <h3 className="text-sm font-semibold text-slate-900">往期精选</h3>
+            <p className="text-xs text-slate-500">最新六篇文章</p>
           </div>
         </div>
-        <Link
-          to="/archive"
-          className="text-sm font-medium text-primary transition hover:text-primary/80"
-        >
+        <Link to="/archive" className="text-xs font-medium text-primary hover:text-primary/80">
           查看全部
         </Link>
       </div>
 
-      <div className="mt-5">
+      <div className="mt-5 space-y-2">
         {isLoading && <p className="text-sm text-slate-500">加载中...</p>}
-        {!isLoading && (!data || data.items.length === 0) && (
+        {!isLoading && (!data || data.items.length === 0) ? (
           <p className="text-sm text-slate-500">暂无文章</p>
-        )}
-        {!isLoading && data && data.items.length > 0 && (
+        ) : null}
+        {!isLoading && data?.items.length ? (
           <ul className="space-y-2">
             {data.items.slice(0, 6).map((article) => (
               <li key={article.id}>
                 <Link
                   to={`/articles/${article.slug}`}
-                  className="group flex items-center justify-between gap-3 rounded-xl border border-transparent px-3 py-2 transition hover:border-primary/20 hover:bg-primary/5"
+                  className="group flex items-center justify-between gap-3 rounded-xl px-3 py-2 transition hover:bg-primary/5"
                 >
                   <div>
-                    <p className="text-sm font-medium text-slate-800 group-hover:text-primary">
-                      {article.title}
-                    </p>
+                    <p className="text-sm font-medium text-slate-800 group-hover:text-primary">{article.title}</p>
                     <p className="text-xs text-slate-400">
                       {article.published_at
                         ? new Date(article.published_at).toLocaleDateString()
@@ -68,8 +66,8 @@ export const QuickArchive = ({ className = "" }: QuickArchiveProps) => {
               </li>
             ))}
           </ul>
-        )}
+        ) : null}
       </div>
-    </div>
+    </section>
   );
 };
