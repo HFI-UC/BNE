@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { useAuthStore } from "../store/auth";
+import { cn } from "../lib/cn";
 
 const navItems = [
   { to: "/", label: "首页" },
@@ -15,11 +16,10 @@ export const MainLayout = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navClassName = ({ isActive }: { isActive: boolean }) =>
-    `inline-flex items-center rounded-full px-4 py-2 text-sm font-medium transition ${
-      isActive
-        ? "bg-white text-primary shadow-sm"
-        : "text-slate-600 hover:bg-white hover:text-slate-900"
-    }`;
+    cn(
+      "inline-flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+      isActive ? "bg-slate-100 text-slate-900" : "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
+    );
 
   const roleLabels: Record<string, string> = {
     admin: "管理员",
@@ -36,31 +36,31 @@ export const MainLayout = () => {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-100/60">
-      <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/90 backdrop-blur">
+    <div className="flex min-h-screen flex-col bg-slate-100/70">
+      <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
-          <Link to="/" className="flex items-center gap-3">
-            <span className="text-xl font-semibold text-primary">HFI 学习中心</span>
-            <span className="hidden text-sm text-slate-500 sm:inline">Learning Hub</span>
+          <Link to="/" className="flex items-center gap-3 text-slate-900">
+            <span className="text-xl font-semibold">HFI 学习中心</span>
+            <span className="hidden text-xs text-slate-500 sm:inline">Learning Hub</span>
           </Link>
-          <nav className="hidden items-center gap-1 rounded-full bg-slate-100 p-1 md:flex">
+          <nav className="hidden items-center gap-1 md:flex">
             {navItems.map((item) => (
               <NavLink key={item.to} to={item.to} className={navClassName} onClick={handleCloseMenu}>
                 {item.label}
               </NavLink>
             ))}
-            {user?.role === "admin" && (
+            {user?.role === "admin" ? (
               <NavLink to="/admin" className={navClassName} onClick={handleCloseMenu}>
                 管理后台
               </NavLink>
-            )}
+            ) : null}
           </nav>
           <div className="flex items-center gap-3">
             {user ? (
               <div className="flex items-center gap-3">
-                <div className="hidden items-center gap-2 rounded-full bg-primary/10 px-3 py-1.5 text-sm font-medium text-primary sm:flex">
+                <div className="hidden items-center gap-2 rounded-xl bg-slate-100 px-3 py-1.5 text-sm font-medium text-slate-700 sm:flex">
                   <span>{user.name}</span>
-                  <span className="rounded-full bg-white/70 px-2 py-0.5 text-xs text-primary/80">
+                  <span className="rounded-full bg-white px-2 py-0.5 text-xs text-slate-500">
                     {roleLabels[user.role] ?? user.role}
                   </span>
                 </div>
@@ -69,7 +69,7 @@ export const MainLayout = () => {
                     void logout();
                     handleCloseMenu();
                   }}
-                  className="inline-flex items-center rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-primary hover:text-primary"
+                  className="inline-flex items-center rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-600 transition hover:border-primary hover:text-primary"
                 >
                   退出
                 </button>
@@ -78,14 +78,14 @@ export const MainLayout = () => {
               <Link
                 to="/login"
                 onClick={handleCloseMenu}
-                className="inline-flex items-center rounded-full bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-primary/90"
+                className="inline-flex items-center rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary/90"
               >
                 登录
               </Link>
             )}
             <button
               type="button"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-300 text-slate-600 transition hover:border-primary hover:text-primary md:hidden"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 text-slate-600 transition hover:border-primary hover:text-primary md:hidden"
               onClick={handleToggleMenu}
               aria-label="切换导航"
             >
@@ -107,19 +107,28 @@ export const MainLayout = () => {
             </button>
           </div>
         </div>
-        {isMenuOpen && (
+        {isMenuOpen ? (
           <nav className="border-t border-slate-200 bg-white/95 md:hidden">
             <div className="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-4">
               {navItems.map((item) => (
-                <NavLink key={item.to} to={item.to} className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100" onClick={handleCloseMenu}>
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
+                  onClick={handleCloseMenu}
+                >
                   {item.label}
                 </NavLink>
               ))}
-              {user?.role === "admin" && (
-                <NavLink to="/admin" className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100" onClick={handleCloseMenu}>
+              {user?.role === "admin" ? (
+                <NavLink
+                  to="/admin"
+                  className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
+                  onClick={handleCloseMenu}
+                >
                   管理后台
                 </NavLink>
-              )}
+              ) : null}
               <div className="pt-2">
                 {user ? (
                   <button
@@ -127,7 +136,7 @@ export const MainLayout = () => {
                       void logout();
                       handleCloseMenu();
                     }}
-                    className="w-full rounded-lg bg-primary px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary/90"
+                    className="w-full rounded-lg bg-primary px-3 py-2 text-sm font-semibold text-white hover:bg-primary/90"
                   >
                     退出登录
                   </button>
@@ -143,7 +152,7 @@ export const MainLayout = () => {
               </div>
             </div>
           </nav>
-        )}
+        ) : null}
       </header>
       <main className="flex-1">
         <div className="relative mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:py-12">
