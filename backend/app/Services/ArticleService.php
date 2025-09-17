@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Repositories\ArticleRepository;
-use RuntimeException;
+use App\Services\Exceptions\ArticleNotFoundException;
 
 class ArticleService
 {
@@ -29,7 +29,7 @@ class ArticleService
     {
         $article = $this->articles->findBySlug($slug);
         if (!$article) {
-            throw new RuntimeException('Article not found');
+            throw new ArticleNotFoundException('Article not found');
         }
         return $article;
     }

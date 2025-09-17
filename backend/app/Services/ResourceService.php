@@ -4,6 +4,12 @@ namespace App\Services;
 
 use App\Repositories\ResourceRepository;
 use App\Services\AuditLogger;
+use App\Services\Exceptions\DownloadLinkException;
+use App\Services\Exceptions\FileUploadException;
+use App\Services\Exceptions\ResourceAvailabilityException;
+use App\Services\Exceptions\ResourceNotFoundException;
+use App\Services\Exceptions\ResourceStorageException;
+use App\Services\Exceptions\ResourceUpdateException;
 use Psr\Http\Message\UploadedFileInterface;
 use Qcloud\Cos\Client as CosClient;
 use RuntimeException;
@@ -22,7 +28,7 @@ class ResourceService
     public function upload(int $userId, UploadedFileInterface $file, array $payload): int
     {
         if ($file->getError() !== UPLOAD_ERR_OK) {
-            throw new RuntimeException('File upload failed');
+            throw new FileUploadException('File upload failed');
         }
 
         $originalName = $file->getClientFilename() ?? 'upload.bin';
@@ -47,7 +53,7 @@ class ResourceService
                 'error' => $exception->getMessage(),
                 'size' => $size,
             ], 'resource');
-            throw new RuntimeException('Failed to store resource file');
+            throw new ResourceStorageException('Failed to store resource file');
         }
 
         $resourceId = $this->resources->create([
@@ -86,7 +92,7 @@ class ResourceService
     {
         $resource = $this->resources->findById($resourceId);
         if (!$resource) {
-            throw new RuntimeException('Resource not found');
+            throw new ResourceNotFoundException('Resource not found');
         }
 
         if ($resource['status'] === 'approved') {
@@ -94,7 +100,7 @@ class ResourceService
         }
 
         if (!$this->resources->updateStatus($resourceId, 'approved', $reviewerId)) {
-            throw new RuntimeException('Failed to update resource');
+            throw new ResourceUpdateException('Failed to update resource');
         }
 
         $this->auditLogger->logAction($reviewerId, 'resource.approved', [
@@ -108,7 +114,7 @@ class ResourceService
     {
         $resource = $this->resources->findById($resourceId);
         if (!$resource) {
-            throw new RuntimeException('Resource not found');
+            throw new ResourceNotFoundException('Resource not found');
         }
 
         if ($resource['status'] === 'rejected') {
@@ -116,7 +122,7 @@ class ResourceService
         }
 
         if (!$this->resources->updateStatus($resourceId, 'rejected', $reviewerId)) {
-            throw new RuntimeException('Failed to update resource');
+            throw new ResourceUpdateException('Failed to update resource');
         }
 
         $this->auditLogger->logAction($reviewerId, 'resource.rejected', [
@@ -130,7 +136,7 @@ class ResourceService
     {
         $resource = $this->resources->findById($resourceId);
         if (!$resource || $resource['status'] !== 'approved') {
-            throw new RuntimeException('Resource not available');
+            throw new ResourceAvailabilityException('Resource not available');
         }
 
         try {
@@ -148,7 +154,7 @@ class ResourceService
                 'ip' => $context['ip'] ?? null,
                 'user_agent' => $context['user_agent'] ?? null,
             ], 'resource', $resourceId);
-            throw new RuntimeException('Unable to generate download link');
+            throw new DownloadLinkException('Unable to generate download link');
         }
 
         $this->auditLogger->logAction($userId, 'resource.download_link_issued', [

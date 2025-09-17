@@ -17,11 +17,10 @@ use InvalidArgumentException;
 use Monolog\Formatter\JsonFormatter;
 use Monolog\Handler\RotatingFileHandler;
 use Monolog\Logger;
-use PDO;
 use Psr\Container\ContainerInterface;
 use Qcloud\Cos\Client as CosClient;
 
-$settings = require __DIR__ . '/settings.php';
+$settings = require_once __DIR__ . '/settings.php';
 
 return [
     'settings' => $settings,
