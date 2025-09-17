@@ -1,0 +1,23 @@
+{
+    "name": "bne/hfi-portal",
+    "description": "HFI portal backend",
+    "type": "project",
+    "require": {
+        "slim/slim": "^4.12",
+        "slim/psr7": "^1.6",
+        "vlucas/phpdotenv": "^5.6",
+        "monolog/monolog": "^2.9",
+        "php-di/php-di": "^7.0",
+        "respect/validation": "^2.2",
+        "qcloud/cos-sdk-v5": "^2.0",
+        "tuupola/cors-middleware": "^1.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        }
+    },
+    "scripts": {
+        "start": "php -S localhost:8080 -t public"
+    }
+}
