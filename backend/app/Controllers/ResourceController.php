@@ -66,7 +66,12 @@ class ResourceController extends Controller
         }
 
         $resourceId = (int)$args['id'];
-        $this->resources->approve($resourceId, $user['id']);
+        try {
+            $this->resources->approve($resourceId, $user['id']);
+        } catch (RuntimeException $exception) {
+            return $this->json($response, ['message' => $exception->getMessage()], 400);
+        }
+
         return $this->json($response, ['message' => 'approved']);
     }
 
@@ -78,14 +83,27 @@ class ResourceController extends Controller
         }
 
         $resourceId = (int)$args['id'];
-        $this->resources->reject($resourceId, $user['id']);
+        try {
+            $this->resources->reject($resourceId, $user['id']);
+        } catch (RuntimeException $exception) {
+            return $this->json($response, ['message' => $exception->getMessage()], 400);
+        }
+
         return $this->json($response, ['message' => 'rejected']);
     }
 
     public function download(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
+        $user = $this->authService->currentUser();
         try {
-            $url = $this->resources->getDownloadUrl((int)$args['id']);
+            $url = $this->resources->getDownloadUrl(
+                (int)$args['id'],
+                $user['id'] ?? null,
+                [
+                    'ip' => $request->getServerParams()['REMOTE_ADDR'] ?? null,
+                    'user_agent' => $request->getHeaderLine('User-Agent'),
+                ]
+            );
         } catch (RuntimeException $exception) {
             return $this->json($response, ['message' => $exception->getMessage()], 404);
         }

@@ -1,4 +1,5 @@
-import { FormEvent, useRef, useState } from "react";
+import type { FormEvent } from "react";
+import { useRef, useState } from "react";
 import { useAuthStore } from "../store/auth";
 import {
   useResources,
@@ -10,7 +11,7 @@ import {
 export const ResourcesPage = () => {
   const { user } = useAuthStore();
   const { data: publicResources } = useResources();
-  const { data: myResources } = useMyResources();
+  const { data: myResources } = useMyResources(Boolean(user));
   const uploadMutation = useUploadResource();
   const downloadMutation = useDownloadResource();
   const fileInputRef = useRef<HTMLInputElement | null>(null);

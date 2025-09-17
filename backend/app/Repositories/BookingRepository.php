@@ -56,12 +56,14 @@ class BookingRepository
         return $this->pdo->query($sql)->fetchAll();
     }
 
-    public function updateStatus(int $bookingId, string $status): void
+    public function updateStatus(int $bookingId, string $status): bool
     {
         $stmt = $this->pdo->prepare('UPDATE bookings SET status = :status WHERE id = :id');
         $stmt->execute([
             'status' => $status,
             'id' => $bookingId,
         ]);
+
+        return $stmt->rowCount() > 0;
     }
 }
