@@ -14,7 +14,7 @@ class ResourceRepository
     {
         $stmt = $this->pdo->prepare(
             'INSERT INTO resources (uploader_id, title, description, cos_key, original_filename, status, created_at)
-             VALUES (:uploader_id, :title, :description, :cos_key, :original_filename, :status, NOW())'
+             VALUES (:uploader_id, :title, :description, :cos_key, :original_filename, :status, CURRENT_TIMESTAMP)'
         );
         $stmt->execute([
             'uploader_id' => $data['uploader_id'],
@@ -67,7 +67,7 @@ class ResourceRepository
             'UPDATE resources
              SET status = :status,
                  approved_by = CASE WHEN :status_value = \'approved\' THEN :reviewer_id ELSE NULL END,
-                 approved_at = CASE WHEN :status_value = \'approved\' THEN NOW() ELSE NULL END
+                 approved_at = CASE WHEN :status_value = \'approved\' THEN CURRENT_TIMESTAMP ELSE NULL END
              WHERE id = :id'
         );
         $stmt->execute([

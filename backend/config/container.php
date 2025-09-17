@@ -13,6 +13,7 @@ use App\Repositories\ResourceRepository;
 use App\Repositories\MentorRepository;
 use App\Repositories\AuditLogRepository;
 use App\Repositories\ErrorLogRepository;
+use InvalidArgumentException;
 use Monolog\Formatter\JsonFormatter;
 use Monolog\Handler\RotatingFileHandler;
 use Monolog\Logger;
@@ -27,6 +28,24 @@ return [
 
     PDO::class => function () use ($settings) {
         $db = $settings['db'];
+        $driver = $db['driver'] ?? 'mysql';
+
+        if ($driver === 'sqlite') {
+            $database = $db['database'] ?? ':memory:';
+            $dsn = $database === ':memory:' ? 'sqlite::memory:' : 'sqlite:' . $database;
+            $pdo = new PDO($dsn, null, null, [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_EMULATE_PREPARES => false,
+            ]);
+            $pdo->exec('PRAGMA foreign_keys = ON');
+            return $pdo;
+        }
+
+        if ($driver !== 'mysql') {
+            throw new InvalidArgumentException(sprintf('Unsupported database driver [%s]', $driver));
+        }
+
         $dsn = sprintf(
             'mysql:host=%s;port=%d;dbname=%s;charset=%s',
             $db['host'],
@@ -34,12 +53,17 @@ return [
             $db['database'],
             $db['charset']
         );
+
         $pdo = new PDO($dsn, $db['username'], $db['password'], [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             PDO::ATTR_EMULATE_PREPARES => false,
         ]);
-        $pdo->exec("SET NAMES '{$db['charset']}' COLLATE '{$db['collation']}'");
+
+        if (!empty($db['charset']) && !empty($db['collation'])) {
+            $pdo->exec("SET NAMES '{$db['charset']}' COLLATE '{$db['collation']}'");
+        }
+
         return $pdo;
     },
 

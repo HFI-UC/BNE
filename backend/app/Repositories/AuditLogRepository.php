@@ -14,7 +14,7 @@ class AuditLogRepository
     {
         $stmt = $this->pdo->prepare(
             'INSERT INTO audit_logs (user_id, action, entity_type, entity_id, metadata_json, ip_address, user_agent, created_at)
-             VALUES (:user_id, :action, :entity_type, :entity_id, :metadata_json, :ip_address, :user_agent, NOW())'
+             VALUES (:user_id, :action, :entity_type, :entity_id, :metadata_json, :ip_address, :user_agent, CURRENT_TIMESTAMP)'
         );
         $stmt->execute([
             'user_id' => $entry['user_id'],

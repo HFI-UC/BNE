@@ -14,7 +14,7 @@ class BookingRepository
     {
         $stmt = $this->pdo->prepare(
             'INSERT INTO bookings (user_id, mentor_id, subject, location, start_time, end_time, status, created_at)
-             VALUES (:user_id, :mentor_id, :subject, :location, :start_time, :end_time, :status, NOW())'
+             VALUES (:user_id, :mentor_id, :subject, :location, :start_time, :end_time, :status, CURRENT_TIMESTAMP)'
         );
         $stmt->execute([
             'user_id' => $data['user_id'],
