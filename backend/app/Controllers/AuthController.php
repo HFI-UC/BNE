@@ -20,7 +20,10 @@ class AuthController extends Controller
             $user = $this->authService->attemptLogin(
                 $data['email'] ?? '',
                 $data['password'] ?? '',
-                ['ip' => $request->getServerParams()['REMOTE_ADDR'] ?? null]
+                [
+                    'ip' => $request->getServerParams()['REMOTE_ADDR'] ?? null,
+                    'user_agent' => $request->getHeaderLine('User-Agent'),
+                ]
             );
         } catch (RuntimeException $exception) {
             return $this->json($response, ['message' => $exception->getMessage()], 401);
@@ -31,7 +34,10 @@ class AuthController extends Controller
 
     public function logout(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $this->authService->logout();
+        $this->authService->logout([
+            'ip' => $request->getServerParams()['REMOTE_ADDR'] ?? null,
+            'user_agent' => $request->getHeaderLine('User-Agent'),
+        ]);
         return $this->json($response, ['message' => 'logged out']);
     }
 

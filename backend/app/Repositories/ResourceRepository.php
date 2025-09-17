@@ -61,12 +61,12 @@ class ResourceRepository
         return $stmt->fetchAll();
     }
 
-    public function updateStatus(int $id, string $status, ?int $reviewerId = null): void
+    public function updateStatus(int $id, string $status, ?int $reviewerId = null): bool
     {
         $stmt = $this->pdo->prepare(
             'UPDATE resources
              SET status = :status,
-                 approved_by = :reviewer_id,
+                 approved_by = CASE WHEN :status_value = \'approved\' THEN :reviewer_id ELSE NULL END,
                  approved_at = CASE WHEN :status_value = \'approved\' THEN NOW() ELSE NULL END
              WHERE id = :id'
         );
@@ -76,5 +76,7 @@ class ResourceRepository
             'status_value' => $status,
             'id' => $id,
         ]);
+
+        return $stmt->rowCount() > 0;
     }
 }
